@@ -40,7 +40,7 @@ const loadUserProfileData = async () => {
     const {data} = await axios.get(backendUrl + '/api/user/get-profile', {headers: {token:token}});
 
         console.log("PROFILE RESPONSE:", data);
-        
+
     if (data.success) {
       setUserData(data.userData);
     } else {
@@ -52,7 +52,8 @@ const loadUserProfileData = async () => {
   }
 };
  const value={
-       doctors,currencySymbol ,
+       doctors,getDoctorsData,
+       currencySymbol ,
        token,setToken,
        backendUrl,
        userData,setUserData,
