@@ -142,7 +142,9 @@ const userId = req.userId
       return res.json({success:false,message:'Doctor not available'})
     }
 
-    let slots_booked = docData.slots_booked
+    // let slots_booked = docData.slots_booked   //most recent replaced
+    let slots_booked = docData.slots_booked || {}
+
 
     // checking for slot availability
     if (slots_booked[slotDate]) {

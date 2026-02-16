@@ -101,11 +101,31 @@ for(let i=0;i<7;i++)
   while(currentDate<endTime){
     let formattedTime=currentDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
 
-    // add slot to array
+ let day=currentDate.getDate()
+ let month=currentDate.getMonth()+1
+ let year=currentDate.getFullYear()
+
+const slotDate = day + "-" + (month) + "-" + year
+const slotTime=formattedTime
+
+// const isSlotAvailable=docInfo.slots_booked[slotDate] && docInfo.slots_booked[slotDate].includes(slotTime)? false : true
+const isSlotAvailable = 
+docInfo.slots_booked &&
+docInfo.slots_booked[slotDate] &&
+docInfo.slots_booked[slotDate].includes(slotTime)
+? false : true
+
+
+
+
+    if(isSlotAvailable){
+// add slot to array
     timeSlots.push({
       datetime:new Date(currentDate),
       time:formattedTime
     })
+}
+    
 
     // Incremented time by 30 minutes
     currentDate.setMinutes(currentDate.getMinutes()+30)
@@ -149,7 +169,8 @@ try {
 
   if (data.success) {
     toast.success(data.message)
-    getDoctorsData()
+    await getDoctorsData()
+    setSlotTime("")
     navigate('/my-appointments')
   } else {
     toast.error(data.message)
@@ -177,9 +198,16 @@ useEffect(() => {
   }
 }, [doctors, docId]);
 
-useEffect(()=>{
-getAvailableSlots()
-},[docInfo])
+// useEffect(()=>{
+// getAvailableSlots()
+// },[docInfo]) //changed most recent
+
+useEffect(() => {
+  if (docInfo) {
+    getAvailableSlots()
+  }
+}, [docInfo])
+
 
 useEffect(()=>{
   console.log(docSlots);
