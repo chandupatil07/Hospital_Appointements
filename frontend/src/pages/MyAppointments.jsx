@@ -2,6 +2,7 @@ import React , {useContext, useState,useEffect} from 'react'
 import {AppContext} from '../context/AppContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
 
 
 
@@ -11,7 +12,7 @@ const MyAppointments = () => {
   const [appointments,setAppointments]=useState([])
 
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-
+  const navigate=useNavigate()
  const slotDateFormat = (slotDate) => {
   const dateArray = slotDate.split("-")   // ✅ use -
 
@@ -59,6 +60,27 @@ const cancelAppointment=async (appointmentId)=>{
 }
 
 
+// const initPay = (order) => {
+
+//   const options = {
+//     key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+//     amount: order.amount,
+//     currency: order.currency,
+//     name: 'Appointment Payment',
+//     description: 'Appointment Payment',
+//     order_id: order.id,
+//     receipt: order.receipt,
+//     handler: async (response) => {
+//       console.log(response)
+//     }
+//   }
+
+//   const rzp = new window.Razorpay(options)
+//   rzp.open()
+// }
+
+
+//Another method added for initPay--->
 const initPay = (order) => {
 
   const options = {
@@ -69,14 +91,52 @@ const initPay = (order) => {
     description: 'Appointment Payment',
     order_id: order.id,
     receipt: order.receipt,
+
     handler: async (response) => {
-      console.log(response)
+
+        console.log("---- RAZORPAY RESPONSE ----");
+  console.log("Order ID:", response.razorpay_order_id);
+  console.log("Payment ID:", response.razorpay_payment_id);
+  console.log("Signature:", response.razorpay_signature);
+  console.log("Appointment ID:", order.receipt);
+
+
+
+      try {
+
+        const { data } = await axios.post(
+          backendUrl + "/api/user/verifyRazorpay",
+          {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            appointmentId: order.receipt
+          },
+          { headers: { token } }
+        )
+
+        if (data.success) {
+          toast.success("Payment Successful")
+          getUserAppointments()
+          navigate('/my-appointments')
+        } else {
+          toast.error("Payment Failed")
+        }
+
+      } catch (error) {
+        console.log(error)
+        toast.error("Verification Failed")
+      }
     }
   }
 
   const rzp = new window.Razorpay(options)
   rzp.open()
 }
+
+
+
+
 
 
 const appointmentRazorpay = async (appointmentId) => {
@@ -125,6 +185,7 @@ useEffect(()=>{
           </div>
           <div></div>
           <div className='flex flex-col gap-2 justify-end' >
+             {!item.cancelled && item.payment && <button className='sm:min-w-48 py-2 border rounded text-stone-500 bg-indigo-50' >Paid</button>}
             {!item.cancelled && <button onClick={()=>appointmentRazorpay(item._id)}  className='text-sm text-stone-500 text-center sm:min-w-48 py-2 border hover:bg-primary hover:text-white transition-all duration-300 ' >Pay Online</button> }
            {!item.cancelled && <button onClick={()=>cancelAppointment(item._id)}  className='text-sm text-stone-500 text-center sm:min-w-48 py-2 border hover:bg-red-600  hover:text-white transition-all duration-300  ' >Cancel Appointment</button> }
             {item.cancelled && <button className='sm:min-w-48 py-2 border border-red-500 rounded text-red-500' >Appointment Cancelled</button> }

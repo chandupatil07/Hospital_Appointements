@@ -6,6 +6,7 @@ import {v2 as cloudinary} from 'cloudinary'
 import doctorModel from '../models/doctorModel.js'
 import appointmentModel from '../models/appointmentModel.js'
 import razorpay from 'razorpay'
+import crypto from "crypto"
 
 // API to register user
 const registerUser = async (req, res) => {
@@ -279,6 +280,56 @@ const paymentRazorpay = async (req, res) => {
   }
 }
 
+//API to verify payment of razorpay
+// const verifyRazorpay = async (req, res) => {
+//   try {
+
+//     const {razorpay_order_id} = req.body
+//     const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
+
+//     console.log(orderInfo)
+
+//   } catch (error) {
+
+//   }
+// }
 
 
-export {registerUser,loginUser,getProfile,updateProfile,bookAppointment,listAppointment,cancelAppointment,paymentRazorpay}
+//Added another logic
+const verifyRazorpay = async (req, res) => {
+  try {
+
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      appointmentId
+    } = req.body
+
+    const sign = razorpay_order_id + "|" + razorpay_payment_id
+
+    const expectedSign = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(sign.toString())
+      .digest("hex")
+
+    if (expectedSign === razorpay_signature) {
+
+      await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true })
+
+      return res.json({ success: true, message: "Payment Successful" })
+
+    } else {
+      return res.json({ success: false, message: "Payment Failed" })
+    }
+
+  } catch (error) {
+    console.log(error)
+    return res.json({ success: false, message: error.message })
+  }
+}
+
+
+
+
+export {registerUser,loginUser,getProfile,updateProfile,bookAppointment,listAppointment,cancelAppointment,paymentRazorpay,verifyRazorpay}
