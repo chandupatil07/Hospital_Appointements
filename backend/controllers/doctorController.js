@@ -1,7 +1,7 @@
 
 // import doctorModel from "../models/doctorModel";
 import doctorModel from "../models/doctorModel.js";
-
+import bcrypt from bcrypt
 const changeAvailability = async (req, res) => {
   try {
     const { docId } = req.body;
@@ -25,6 +25,8 @@ const doctorList = async (req, res) => {
     res.json({success:false,message:error.message})
   }
 }
+
+//API for doctor Login
 
 
 export { changeAvailability,doctorList };//hangeAvailablity updated whole file here
