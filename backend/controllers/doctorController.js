@@ -175,5 +175,48 @@ const doctorDashboard = async (req, res) => {
 
 }
 
+//API to get doctor profile for Doctor Panel
+const doctorProfile = async (req, res) => {
+  try {
 
-export { changeAvailability,doctorList,loginDoctor,appointmentsDoctor,appointmentComplete,appointmentCancel ,doctorDashboard};//hangeAvailablity updated whole file here
+    // const { docId } = req.body  //Most Recently changed
+      const docId = req.docId  
+    const profileData = await doctorModel.findById(docId).select('-password')
+
+    res.json({ success: true, profileData })
+
+  } catch (error) {
+    console.log(error)
+    res.json({ success: false, message: error.message })
+  }
+}
+
+//API to update doctor profile data from Doctor Panel
+const updateDoctorProfile = async (req, res) => {
+
+  try {
+
+    // const { docId, fees, address, available } = req.body  //Most recently changed
+
+    const { fees, address, available,about } = req.body
+    const docId = req.docId   // ✅ from token
+
+    await doctorModel.findByIdAndUpdate(docId, {fees, address, available,about})
+
+    res.json({success:true, message:'Profile Updated'})
+
+  } catch (error) {
+    console.log(error)
+    res.json({success:false,message:error.message})
+  }
+
+}
+
+export { changeAvailability,
+  doctorList,loginDoctor,
+  appointmentsDoctor,
+  appointmentComplete,
+  appointmentCancel ,
+  doctorDashboard,
+doctorProfile,
+updateDoctorProfile};//hangeAvailablity updated whole file here
